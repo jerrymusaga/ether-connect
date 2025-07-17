@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import ThirdwebProviderWrapper from "./ThirdwebProvider";
 import "./globals.css";
+import Header from "../components/ui/Header";
+import { AppUIProvider } from "../components/ui/AppUIContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,12 +25,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Only for client components, but for now, just render children
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThirdwebProviderWrapper>
+          <AppUIProvider>
+            <Header />
+            {children}
+          </AppUIProvider>
+        </ThirdwebProviderWrapper>
       </body>
     </html>
   );
