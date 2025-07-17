@@ -4,11 +4,22 @@ import { Quest } from "../../../types/quest";
 
 interface QuestsViewProps {
   activeQuests: Quest[];
+  onCompleteQuest?: (questId: string) => void;
 }
 
-const QuestsView: React.FC<QuestsViewProps> = ({ activeQuests }) => (
+const QuestsView: React.FC<QuestsViewProps> = ({
+  activeQuests,
+  onCompleteQuest,
+}) => (
   <div className="pt-20 pb-24 px-4">
     <div className="max-w-2xl mx-auto">
+      <div className="mb-6 p-4 bg-gradient-to-r from-pink-100/80 to-purple-100/80 rounded-xl border border-pink-200 flex items-center gap-3 shadow">
+        <span className="text-2xl">🎯</span>
+        <span className="text-base text-pink-700 font-semibold">
+          Complete quests with your match to earn XP, rewards, and evolve your{" "}
+          <span className="font-bold text-purple-700">MomentNFT</span>!
+        </span>
+      </div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Active Quests</h2>
         <div className="flex items-center space-x-2">
@@ -87,8 +98,19 @@ const QuestsView: React.FC<QuestsViewProps> = ({ activeQuests }) => (
                   {quest.progress}%
                 </div>
               </div>
-              <button className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-medium hover:from-pink-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg">
-                {quest.progress === 0 ? "Start Quest" : "Continue"}
+              <button
+                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-medium hover:from-pink-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+                disabled={quest.completed}
+                onClick={() => {
+                  if (!quest.completed && onCompleteQuest)
+                    onCompleteQuest(quest.id);
+                }}
+              >
+                {quest.completed
+                  ? "Completed"
+                  : quest.progress < 100
+                  ? "Complete Quest"
+                  : "Completed"}
               </button>
             </div>
             <div className="mt-3 bg-gray-200 rounded-full h-2 shadow-inner">

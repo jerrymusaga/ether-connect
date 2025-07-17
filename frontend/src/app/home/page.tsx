@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DiscoverView from "@/components/features/discover/DiscoverView";
 import MatchesView from "@/components/features/matches/MatchesView";
 import QuestsView from "@/components/features/quests/QuestsView";
@@ -40,6 +40,12 @@ const EtherConnect: React.FC = () => {
   const [mode, setMode] = useState<"dating" | "friendship">("dating"); // From onboarding
   const [showWelcome, setShowWelcome] = useState(true); // For welcome message
   const [showConfetti, setShowConfetti] = useState(false); // For match celebration
+  const [showNFTCelebration, setShowNFTCelebration] = useState(false);
+  const [evolvedNFT, setEvolvedNFT] = useState<{
+    level: number;
+    name: string;
+    image: string;
+  } | null>(null);
 
   // Mock data with comprehensive user profiles
   useEffect(() => {
@@ -304,6 +310,37 @@ const EtherConnect: React.FC = () => {
     }
   }, [notifications]);
 
+  // Handler for quest completion
+  const handleCompleteQuest = useCallback((questId: string) => {
+    setActiveQuests((prev) =>
+      prev.map((q) =>
+        q.id === questId ? { ...q, completed: true, progress: 100 } : q
+      )
+    );
+    setMatches((prev) =>
+      prev.map((m) => {
+        if (m.currentQuest && m.currentQuest.id === questId) {
+          // Evolve the MomentNFT: level up, new name/art (simulate)
+          const newLevel = m.momentNFT.level + 1;
+          const newName = `Evolved Moment Lv.${newLevel}`;
+          const newImage = newLevel === 2 ? "🌟" : newLevel === 3 ? "💎" : "🔥";
+          setEvolvedNFT({ level: newLevel, name: newName, image: newImage });
+          setShowNFTCelebration(true);
+          return {
+            ...m,
+            momentNFT: {
+              ...m.momentNFT,
+              level: newLevel,
+              name: newName,
+              image: newImage,
+            },
+          };
+        }
+        return m;
+      })
+    );
+  }, []);
+
   return (
     <div
       className={`min-h-screen transition-all ${
@@ -313,6 +350,38 @@ const EtherConnect: React.FC = () => {
       {/* Confetti for new matches */}
       {showConfetti && (
         <Confetti width={window.innerWidth} height={window.innerHeight} />
+      )}
+
+      {/* NFT Evolution Celebration Modal */}
+      {showNFTCelebration && evolvedNFT && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl border-2 border-pink-200 flex flex-col items-center max-w-xs animate-pulse">
+            <div className="text-6xl mb-2 animate-bounce">
+              {evolvedNFT.image}
+            </div>
+            <h2 className="text-2xl font-bold text-pink-600 mb-2">
+              MomentNFT Evolved!
+            </h2>
+            <p className="text-lg font-semibold text-purple-700 mb-2">
+              {evolvedNFT.name}
+            </p>
+            <p className="text-gray-700 mb-4 text-center">
+              Your relationship NFT has evolved to{" "}
+              <span className="font-bold">Level {evolvedNFT.level}</span>! Keep
+              completing quests to unlock more.
+            </p>
+            <button
+              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-2 rounded-lg font-semibold shadow-lg mt-2"
+              onClick={() => setShowNFTCelebration(false)}
+            >
+              Awesome!
+            </button>
+          </div>
+          {/* Confetti */}
+          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+            <span className="text-6xl animate-bounce">🎉</span>
+          </div>
+        </div>
       )}
 
       <div className="relative z-10 pt-10">
@@ -326,13 +395,19 @@ const EtherConnect: React.FC = () => {
               currentUsers={currentUsers}
               currentUserIndex={currentUserIndex}
               setCurrentUserIndex={setCurrentUserIndex}
-              setShowProfile={() => {}} // Removed setShowProfile
+              setShowProfile={() => {}}
               setNotifications={setNotifications}
               notifications={notifications}
+              onStartQuest={() => setCurrentView("quests")}
             />
             {/* Highlight recommended quest */}
             {activeQuests[0] && (
               <div className="max-w-sm mx-auto mt-4 p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-xl border border-purple-500/20">
+                <div className="mb-2 text-sm text-pink-100 font-medium">
+                  Quests help you and your match connect, earn XP, and unlock
+                  new features! Complete quests together to evolve your
+                  MomentNFT and earn rewards.
+                </div>
                 <h3 className="text-lg font-semibold text-white mb-2">
                   Recommended Quest
                 </h3>
@@ -341,7 +416,7 @@ const EtherConnect: React.FC = () => {
                   className="mt-3 bg-[#FDA7FF] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#fd7bff]"
                   onClick={() => setCurrentView("quests")}
                 >
-                  Start Quest
+                  View Quest Details
                 </button>
               </div>
             )}
@@ -362,7 +437,12 @@ const EtherConnect: React.FC = () => {
             )}
           </div>
         )}
-        {currentView === "quests" && <QuestsView activeQuests={activeQuests} />}
+        {currentView === "quests" && (
+          <QuestsView
+            activeQuests={activeQuests}
+            onCompleteQuest={handleCompleteQuest}
+          />
+        )}
         {currentView === "profile" && <ProfileView user={user} />}
         {currentView === "recommendations" && <RecommendationsView />}
         {currentView === "failstate" && <FailStateView />}
