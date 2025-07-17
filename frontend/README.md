@@ -34,3 +34,19 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+graph TD
+    A["User Onboards (fun quiz, avatar, interests)"] --> B["Profile Created (XP, badge)"]
+    B --> C["Swipes on Profiles (chemistry meter, XP)"]
+    C --> D{"Mutual Match?"}
+    D -- Yes --> E["Crush SBT Minted (animation, badge)"]
+    E --> F["Date Quest Assigned (timer, quest log)"]
+    F --> G{"Quest Completed in Time?"}
+    G -- Yes --> H["MomentNFT Levels Up (visual change, XP)"]
+    G -- No --> I["Rekt in Love (consolation, retry prompt)"]
+    D -- No --> J["Rekt in Love (consolation, retry prompt)"]
+    H --> F
+    I --> C
+    J --> C
